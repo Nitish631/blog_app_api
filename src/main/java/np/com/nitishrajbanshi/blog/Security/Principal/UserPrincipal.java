@@ -1,4 +1,4 @@
-package np.com.nitishrajbanshi.blog.Principal;
+package np.com.nitishrajbanshi.blog.Security.Principal;
 
 import java.util.Collection;
 import java.util.List;

@@ -5,6 +5,8 @@ import java.util.stream.Collectors;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+// import org.springframework.security.core.context.SecurityContext;
+// import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -31,6 +33,7 @@ public class UserServiceImpl implements UserService {
 	public UserDto updateUser(UserDto userDto, Integer userId) {
 		User user=this.userRepo.findById(userId).orElseThrow(()-> new ResourceNotFoundException("User","id",userId));
 		this.modelMapper.map(userDto, user);
+		user.setPassword(this.passwordEncoder.encode(userDto.getPassword()));
 		User updatedUser=this.userRepo.save(user);
 		return this.userToDto(updatedUser);
 	}
@@ -50,7 +53,7 @@ public class UserServiceImpl implements UserService {
 
 	@Override
 	public void deleteUser(Integer userId) {
-		User user=this.userRepo.findById(userId).orElseThrow(()->new ResourceNotFoundException("User","id",userId));
+		User user=this.userRepo.findById(userId).orElseThrow(()->new ResourceNotFoundException("User","email",userId));
 		this.userRepo.delete(user);
 	}
 	private User dtoToUser(UserDto userDto) {

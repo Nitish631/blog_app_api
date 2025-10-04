@@ -6,7 +6,9 @@ import java.util.List;
 import java.util.Set;
 
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Table(name = "users")
@@ -30,8 +32,9 @@ public class User {
 	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	private List<Post> posts = new ArrayList<>();
 	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
-	private Set<Comment> comments = new HashSet();
-	@ManyToMany(cascade = CascadeType.ALL,fetch = FetchType.EAGER)
+	private Set<Comment> comments = new HashSet<>();
+	// @ManyToMany(cascade = CascadeType.ALL,fetch = FetchType.EAGER)
+	@ManyToMany(fetch = FetchType.EAGER)
 	@JoinTable(name = "user_role", joinColumns = @JoinColumn(name = "user", referencedColumnName = "id"), inverseJoinColumns =  @JoinColumn(name = "role", referencedColumnName = "roleId"))
 	private Set<Role> roles = new HashSet<>();
 }

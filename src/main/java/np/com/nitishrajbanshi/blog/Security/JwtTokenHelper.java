@@ -5,7 +5,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
+import javax.crypto.SecretKey;
+
 import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.io.Decoders;
+import io.jsonwebtoken.security.Keys;
 import np.com.nitishrajbanshi.blog.config.AppConstants;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
@@ -22,10 +26,14 @@ public class JwtTokenHelper {
         final String username=getUserNameFromToken(token);
         return (username.equals(userDetails.getUsername())&& !isTokenExpired(token));
     }
-    private String doGenerateToken(Map<String,Object> claims,String userName){
-        return  Jwts.builder().setClaims(claims).setSubject(userName).setIssuedAt(new Date(System.currentTimeMillis())).setExpiration(new Date(System.currentTimeMillis()+AppConstants.JWT_TOKEN_VALIDITY*1000)).signWith(SignatureAlgorithm.HS512,AppConstants.secretKey).compact();
+    private SecretKey getSigningKey(){
+        byte[] keyBytes=Decoders.BASE64.decode(AppConstants.secretKey);
+        return Keys.hmacShaKeyFor(keyBytes);
     }
-    private String getUserNameFromToken(String token){
+    private String doGenerateToken(Map<String,Object> claims,String userName){
+        return  Jwts.builder().setClaims(claims).setSubject(userName).setIssuedAt(new Date(System.currentTimeMillis())).setExpiration(new Date(System.currentTimeMillis()+AppConstants.JWT_TOKEN_VALIDITY*1000)).signWith(getSigningKey(),SignatureAlgorithm.HS512).compact();
+    }
+    public String getUserNameFromToken(String token){
         return getClaimFromToken(token,Claims::getSubject);
     }
     private  <T>T getClaimFromToken(String token,Function<Claims,T> claimsResolver){
@@ -34,9 +42,9 @@ public class JwtTokenHelper {
     }
     private Claims getAllClaimsFromToken(String token) {
         return  Jwts.parserBuilder()
-                .setSigningKey(AppConstants.secretKey)
+                .setSigningKey(getSigningKey())
                 .build()
-                .parseClaimsJwt(token)
+                .parseClaimsJws(token)
                 .getBody();
     }
     private   boolean isTokenExpired(String token){
