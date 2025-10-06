@@ -5,6 +5,18 @@ build/
 !**/src/main/**/build/
 !**/src/test/**/build/
 
+### Spring Boot configuration ###
+# Ignore application config files (keep them local, not in GitHub)
+src/main/resources/application.properties
+src/main/resources/application.yml
+src/main/resources/application-*.properties
+src/main/resources/application-*.yml
+
+### Logs ###
+*.log
+logs/
+*.out
+
 ### STS ###
 .apt_generated
 .classpath
@@ -35,3 +47,7 @@ out/
 
 ### VS Code ###
 .vscode/
+
+### OS / Misc ###
+.DS_Store
+Thumbs.db
