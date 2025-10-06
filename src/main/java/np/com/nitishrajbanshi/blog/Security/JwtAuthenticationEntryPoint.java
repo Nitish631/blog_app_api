@@ -16,10 +16,11 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response,
             AuthenticationException authException) throws IOException, ServletException {
-        // response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-        // response.setContentType("application/json");
-        // response.getWriter().write("Unauthorized: token s missing or invalid");
-        // }
-            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Access Denied");
+        System.out.println("JwtAuthenticationEntryPoint: Unauthorized access to " + request.getRequestURI() + " reason: " + (authException==null?"N/A":authException.getMessage()));
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        response.setContentType("application/json;charset=UTF-8");
+        String message = authException == null ? "Unauthorized" : authException.getMessage();
+        String json = String.format("{\"timestamp\":%d,\"status\":401,\"error\":\"Unauthorized\",\"message\":\"%s\",\"path\":\"%s\"}", System.currentTimeMillis(), message, request.getRequestURI());
+        response.getWriter().write(json);
     }
 }

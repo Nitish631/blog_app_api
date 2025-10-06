@@ -10,16 +10,22 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import np.com.nitishrajbanshi.blog.config.AppConstants;
+import np.com.nitishrajbanshi.blog.entities.Role;
 import np.com.nitishrajbanshi.blog.entities.User;
 import np.com.nitishrajbanshi.blog.exception.ResourceNotFoundException;
 import np.com.nitishrajbanshi.blog.payloads.UserDto;
+import np.com.nitishrajbanshi.blog.repositories.RoleRepo;
 import np.com.nitishrajbanshi.blog.repositories.UserRepo;
 import np.com.nitishrajbanshi.blog.services.UserService;
 @Service
 public class UserServiceImpl implements UserService {
 	@Autowired
 	private UserRepo userRepo;
-	private BCryptPasswordEncoder passwordEncoder=new BCryptPasswordEncoder(12);
+	@Autowired
+	private RoleRepo roleRepo;
+	@Autowired
+	private BCryptPasswordEncoder passwordEncoder;
 	@Override
 	public UserDto createUser(UserDto userDto) {
 		User user=this.dtoToUser(userDto);
@@ -75,6 +81,16 @@ public class UserServiceImpl implements UserService {
 		// userDto.setPassword(user.getPassword());
 		UserDto userDto=this.modelMapper.map(user,UserDto.class);
 		return userDto;
+	}
+
+	@Override
+	public UserDto registerNewUser(UserDto userDto) {
+		User user=this.modelMapper.map(userDto, User.class);
+		user.setPassword(this.passwordEncoder.encode(user.getPassword()));
+		Role role=this.roleRepo.findById(AppConstants.USER_ROLE_ID).get();
+		user.getRoles().add(role);
+		User registeredUser=this.userRepo.save(user);
+		return this.modelMapper.map(registeredUser, UserDto.class);
 	}
 
 }

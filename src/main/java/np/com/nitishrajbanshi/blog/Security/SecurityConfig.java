@@ -30,18 +30,25 @@ public class SecurityConfig {
     private JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
     @Autowired
     private JwtAuthenticationFilter jwtAuthenticationFilter;
+    @Autowired
+    private JwtAccessDeniedHandler jwtAccessDeniedHandler;
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http)throws Exception{
-        http
-        .cors(Customizer.withDefaults())
-        .exceptionHandling(ex->ex.authenticationEntryPoint(this.jwtAuthenticationEntryPoint))
+    http
+    .cors(Customizer.withDefaults())
+    .exceptionHandling(ex->ex.authenticationEntryPoint(this.jwtAuthenticationEntryPoint)
+            .accessDeniedHandler(this.jwtAccessDeniedHandler))
         .csrf(customizer->customizer.disable())
         .authorizeHttpRequests(request->request
             .requestMatchers(HttpMethod.OPTIONS, "**").permitAll()
-            .requestMatchers("/api/v1/auth/login", "/api/v1/auth/register").permitAll()
+            // Allow all auth endpoints (login/register) without authentication
+            .requestMatchers("/api/v1/auth/**").permitAll()
+            // Permit error path so error dispatches don't get intercepted by security and turned into 401
+            .requestMatchers("/error").permitAll()
+            // common public endpoints
+            .requestMatchers("/favicon.ico").permitAll()
             .anyRequest().authenticated())
-        .sessionManagement(session->session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-        .httpBasic(Customizer.withDefaults())
+    .sessionManagement(session->session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .addFilterBefore(this.jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
